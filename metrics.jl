@@ -1,14 +1,16 @@
-function rr(scores, targets)
-    sorted_scores = sortperm(-scores)
-    ranked_targets = targets[sorted_scores]
-    return 1//findall(x -> x != 0, ranked_targets)[1]
-end
+abstract type Metric end
 
-function mrr(list_of_scores, list_of_targets)
-    return [rr(scores, targets) for (scores, targets) in zip(list_of_scores, list_of_targets)]
-end
+mutable struct MRR <: Metric name :: String end
+mutable struct MAP <: Metric name :: String end
 
-scores = [[2, 1, 3], [1, 2, 3]]
-targets = [[1, 0, 0], [1, 0, 0]]     
-    
-mean_reciprocal_rank = mrr(scores, targets)
+
+function eval(metric::MRR, list_of_scores::Vector, list_of_targets::Vector, top_n::Integer=10)
+    s = 0
+    for (scores, targets) in zip(list_of_scores, list_of_targets)
+        sorted_scores = sortperm(-scores)
+        ranked_targets = targets[sorted_scores][begin:min(top_n, end)]
+        s += 1//findall(x -> x != 0, ranked_targets)[1]
+    end
+
+    return s / length(list_of_scores)
+end
