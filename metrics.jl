@@ -14,13 +14,12 @@ mutable struct MAP
     top_n::Number
 end
 
-
 function metric_evaluator(name::String, list_of_scores::Vector, list_of_targets::Vector)
     name_split = split(name, "@") 
     if name_split[1] == "MRR"
-        return MRR(name_split[1], list_of_scores, list_of_targets, Integer(name_split))
+        return MRR(name_split[1], list_of_scores, list_of_targets, Integer(name_split[2]))
     else
-        return MAP(name_split[1], list_of_scores, list_of_targets, Integer(name_split))
+        return MAP(name_split[1], list_of_scores, list_of_targets, Integer(name_split[2]))
     end
 end
 
@@ -31,6 +30,5 @@ function eval(m::MRR)
         ranked_targets = targets[sorted_scores][begin:min(m.top_n, end)]
         s += 1//findall(x -> x != 0, ranked_targets)[1]
     end
-    return s / length(m1.list_of_scores)
+    return s / length(m.list_of_scores)
 end
-
