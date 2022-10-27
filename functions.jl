@@ -1,53 +1,15 @@
-abstract type Metric end
+using Statistics
 
-mutable struct MRR 
-    name::String
-    list_of_scores::Vector
-    list_of_targets::Vector
-    top_n::Number
-end
-
-mutable struct MAP
-    name :: String
-    list_of_scores::Vector
-    list_of_targets::Vector
-    top_n::Number
-end
-
-function metric_evaluator(name::String, list_of_scores::Vector, list_of_targets::Vector)
-    name_split = split(name, "@") 
-    if name_split[1] == "MRR"
-        return MRR(name_split[1], list_of_scores, list_of_targets, Integer(name_split[2]))
-    else
-        return MAP(name_split[1], list_of_scores, list_of_targets, Integer(name_split[2]))
-    end
-end
-
-function eval(m::MRR)
+function mrr(scores, targets, top_n=10)
     s = 0
-    for (scores, targets) in zip(m.list_of_scores, m.list_of_targets)
+    for (scores, targets) in zip(scores, scores)
         sorted_scores = sortperm(-scores)
-        ranked_targets = targets[sorted_scores][begin:min(m.top_n, end)]
+        ranked_targets = targets[sorted_scores][begin:min(top_n, end)]
         s += 1//findall(x -> x != 0, ranked_targets)[1]
     end
-    return s / length(m.list_of_scores)
-end
-
-function mrr(scores, targets)
-    s = 0
-    for (scores, targets) in zip(m.list_of_scores, m.list_of_targets)
-        sorted_scores = sortperm(-scores)
-        ranked_targets = targets[sorted_scores][begin:min(m.top_n, end)]
-        s += 1//findall(x -> x != 0, ranked_targets)[1]
-    end
-    return s / length(m.list_of_scores)
+    return s / length(scores)
 end
 
 function mae(y_pred, y; agg = mean)
-    _check_sizes(y_pred, y)
     agg(abs.(y_pred .- y))
 end
-
-
-
-
